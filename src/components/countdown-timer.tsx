@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useTime } from '@/contexts/time-context';
-import { parseTimeToDate, formatDuration } from '@/lib/time-utils';
-import { Progress } from '@/components/ui/progress';
+import { formatDuration } from '@/lib/time-utils';
 
 interface CountdownTimerProps {
   startTime: string;
@@ -18,7 +17,6 @@ export function CountdownTimer({ startTime, endTime, status }: CountdownTimerPro
     const updateTimer = () => {
       const now = new Date(estTime);
       
-      // Create EST times by parsing the time strings in EST context
       const start = new Date(estTime);
       const [startHour, startMinute] = startTime.split(':').map(Number);
       start.setHours(startHour, startMinute, 0, 0);
@@ -27,45 +25,30 @@ export function CountdownTimer({ startTime, endTime, status }: CountdownTimerPro
       const [endHour, endMinute] = endTime.split(':').map(Number);
       end.setHours(endHour, endMinute, 0, 0);
       
-      // Handle overnight sessions
-      const isOvernight = end < start;
-      if (isOvernight) {
-        // If current time is before midnight (still in first day)
-        if (now < start) {
+      if (end < start) {
+        if (now >= start) { // We are in the first day of an overnight session
           end.setDate(end.getDate() + 1);
-        }
-        // If current time is after midnight (in second day)
-        else {
-          start.setDate(start.getDate() + 1);
-          end.setDate(end.getDate() + 1);
+        } else { // We are in the second day, before the session starts
+          start.setDate(start.getDate() - 1);
         }
       }
       
       if (status === 'upcoming') {
-        // Calculate time until start
         const timeUntilStart = start.getTime() - now.getTime();
-        setTimeText(`Starts in: ${formatDuration(timeUntilStart)}`);
-        
-        // Calculate progress as percentage of time passed until start
-        const totalTimeUntilStart = start.getTime() - (start.getTime() - 24 * 60 * 60 * 1000);
-        const timePassedPercent = 100 - (timeUntilStart / totalTimeUntilStart) * 100;
-        setProgress(Math.max(0, Math.min(100, timePassedPercent)));
+        setTimeText(`STARTS IN: ${formatDuration(timeUntilStart)}`);
+        setProgress(0);
       } else if (status === 'active') {
-        // Calculate time remaining
         const timeRemaining = end.getTime() - now.getTime();
-        setTimeText(`Remaining: ${formatDuration(timeRemaining)}`);
+        setTimeText(`ENDS IN: ${formatDuration(timeRemaining)}`);
         
-        // Calculate progress as percentage of time passed in session
         const totalSessionDuration = end.getTime() - start.getTime();
-        const timePassedPercent = ((now.getTime() - start.getTime()) / totalSessionDuration) * 100;
-        setProgress(Math.max(0, Math.min(100, timePassedPercent)));
+        const timePassed = now.getTime() - start.getTime();
+        setProgress(Math.min(100, (timePassed / totalSessionDuration) * 100));
       }
     };
     
-    updateTimer();
-    
-    // Only set up interval if we're tracking an active or upcoming event
     if (status !== 'inactive') {
+      updateTimer();
       const interval = setInterval(updateTimer, 1000);
       return () => clearInterval(interval);
     }
@@ -74,12 +57,16 @@ export function CountdownTimer({ startTime, endTime, status }: CountdownTimerPro
   if (status === 'inactive') return null;
   
   return (
-    <div className="space-y-1">
-      <div className="flex justify-between text-xs">
-        <span>{timeText}</span>
-        <span>{progress.toFixed(0)}%</span>
+    <div className="space-y-2">
+      <p className="font-digital text-lg text-cyan-300/70" style={{ textShadow: '0 0 2px rgba(100, 255, 255, 0.3)' }}>
+        {timeText}
+      </p>
+      <div className="w-full bg-black/30 rounded-full h-2 shadow-inner shadow-black/50 border border-white/10">
+        <div 
+          className="bg-cyan-400/80 h-full rounded-full transition-all duration-1000" 
+          style={{ width: `${progress}%`, boxShadow: '0 0 5px rgba(100, 255, 255, 0.5)' }}
+        />
       </div>
-      <Progress value={progress} className="h-1.5" />
     </div>
   );
 }
