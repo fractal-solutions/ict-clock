@@ -131,7 +131,6 @@ export function getTimeWindowStatus(
   const tzOffset = tzData ? tzData.offset * 60 * 60 * 1000 : 0;
   
   const tzTime = new Date(currentTime.getTime() + tzOffset);
-  const now = new Date(currentTime);
   
   // Get today's date in target timezone
   const today = new Date(Date.UTC(
@@ -191,7 +190,6 @@ export function getTimeWindowStatus(
   
   // Calculate time until window starts/ends in target timezone
   const timeUntilStart = start.getTime() - tzTime.getTime();
-  const timeUntilEnd = end.getTime() - tzTime.getTime();
   
   // If window is upcoming (starts within next 2 hours)
   const twoHoursInMs = 2 * 60 * 60 * 1000;

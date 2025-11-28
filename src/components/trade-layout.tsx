@@ -1,23 +1,13 @@
 import { useState, useEffect } from 'react';
 import { TradingDashboard } from '@/components/trading-dashboard';
 import { useTime } from '@/contexts/time-context';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { SessionsPanel } from '@/components/sessions-panel';
 import { KillzonesPanel } from '@/components/killzones-panel';
 import { MacrosPanel } from '@/components/macros-panel';
 
 export default function TradeLayout() {
-  const { timezone: contextTimezone, setTimezone } = useTime();
-  const [timezone, setLocalTimezone] = useState(contextTimezone);
-
-  useEffect(() => {
-    setLocalTimezone(contextTimezone);
-  }, [contextTimezone]);
-
-  const handleTimezoneChange = (tz: string) => {
-    setTimezone(tz);
-    setLocalTimezone(tz);
-  };
+  const { } = useTime();
   const [view, setView] = useState<'all' | 'sessions' | 'killzones' | 'macros'>('all');
 
   useEffect(() => {
@@ -51,3 +41,4 @@ export default function TradeLayout() {
       </div>
   );
 }
+

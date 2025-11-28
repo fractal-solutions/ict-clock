@@ -1,10 +1,28 @@
-import React, { useState, useRef, useEffect, useLayoutEffect } from 'react';
+import { useState, useRef, useEffect, useLayoutEffect } from 'react';
 import { TimeWindow } from '@/components/time-window';
 import { useTime } from '@/contexts/time-context';
 import { getTimeWindowStatus } from '@/lib/time-utils';
 import { cn } from '@/lib/utils';
 
-export function RevolvingMenu({ items, color, timezone, title }) {
+interface TimeWindowItem {
+  id: string;
+  name: string;
+  startTime: string;
+  endTime: string;
+  description?: string;
+  relatedSession?: string;
+  isSpecialEvent?: boolean;
+  macroNumber?: number;
+}
+
+interface RevolvingMenuProps {
+  items: TimeWindowItem[];
+  color: 'blue' | 'orange' | 'green' | 'red';
+  timezone: string;
+  title: string;
+}
+
+export function RevolvingMenu({ items, color, timezone, title }: RevolvingMenuProps) {
   const { estTime } = useTime();
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [spacerWidth, setSpacerWidth] = useState(0);
@@ -13,7 +31,7 @@ export function RevolvingMenu({ items, color, timezone, title }) {
   const scrollTimeout = useRef<NodeJS.Timeout | null>(null);
   const isManuallyControlled = useRef(false);
 
-  const activeItemIndex = items.findIndex(item => getTimeWindowStatus(estTime, item.startTime, item.endTime) === 'active');
+  const activeItemIndex = items.findIndex((item) => getTimeWindowStatus(estTime, item.startTime, item.endTime) === 'active');
 
   // Effect to auto-select the active item
   useEffect(() => {
@@ -85,7 +103,7 @@ export function RevolvingMenu({ items, color, timezone, title }) {
               key={item.id}
               ref={el => itemRefs.current[index] = el}
               className={cn(
-                'flex-shrink-0 w-80 transition-all duration-300 mx-2',
+                'flex-shrink-0 w-[calc(100%-1rem)] lg:w-80 transition-all duration-300 mx-2',
                 {
                   'scale-100': isSelected,
                   'scale-90 opacity-60': !isSelected,
